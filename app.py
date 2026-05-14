@@ -2,148 +2,144 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import time
-import base64
 
-# Page configuration for TV (Wide mode)
-st.set_page_config(page_title="Ayathi Avurudu Udanaya - TV", layout="wide")
+# Page Configuration for TV
+st.set_page_config(page_title="Ayathi Avurudu Udanaya 2026", layout="wide")
 
-# --- BACKGROUND IMAGE SETTING ---
-# Oyaage image eka "background.jpg" kiyala repo ekata danna. 
-# Nathnam online link ekak danna puluwan.
-def get_base64(bin_file):
-    with open(bin_file, 'rb') as f:
-        data = f.read()
-    return base64.b64encode(data).decode()
-
-def set_background(png_file):
-    bin_str = get_base64(png_file)
-    page_bg_img = f'''
+# --- ULTIMATE CSS FOR TV & BACKGROUND ---
+st.markdown("""
     <style>
-    .stApp {{
-        background-image: url("data:image/png;base64,{bin_str}");
+    /* Background Image from Web (Dark & Professional) */
+    .stApp {
+        background-image: url("https://images.unsplash.com/photo-1550684848-fac1c5b4e853?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80");
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
-    }}
-    /* Adding a dark overlay to make text readable */
-    .stApp::before {{
+    }
+    
+    /* Overlay to make content pop */
+    .stApp::before {
         content: "";
         position: absolute;
         top: 0; left: 0; width: 100%; height: 100%;
-        background-color: rgba(0, 0, 0, 0.6); /* 60% black overlay */
+        background-color: rgba(0, 0, 0, 0.7);
         z-index: -1;
-    }}
-    </style>
-    '''
-    st.markdown(page_bg_img, unsafe_allow_html=True)
-
-# Meeka run karanna kalin image ekak repo ekata danna (Ex: bg.png)
-# set_background('bg.png') 
-
-# --- ADVANCED CSS FOR TV DISPLAY ---
-st.markdown("""
-    <style>
-    /* TV optimized Big Fonts */
-    html, body, [class*="st-"] {
-        font-family: 'Arial Black', Gadget, sans-serif;
     }
-    
+
+    /* Title Styling */
     .main-title {
-        font-size: 70px !important; /* Huge title for TV */
+        font-size: 80px !important;
         font-weight: 900;
         text-align: center;
-        color: #FFD700;
-        text-shadow: 4px 4px 10px rgba(0,0,0,0.8);
-        margin-bottom: 50px;
+        background: linear-gradient(to right, #FFD700, #FFA500, #FF4500);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0px 10px 20px rgba(0,0,0,0.5);
+        margin-bottom: 40px;
+        font-family: 'Arial Black';
     }
 
-    /* Big Metric Cards */
-    [data-testid="stMetricValue"] {
-        font-size: 60px !important; /* Large numbers */
-        font-weight: bold;
-        color: #ffffff;
+    /* Glassmorphism Leaderboard Cards */
+    .leaderboard-card {
+        background: rgba(255, 255, 255, 0.08);
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        padding: 30px;
+        border-radius: 25px;
+        text-align: center;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        margin: 10px;
     }
-    [data-testid="stMetricLabel"] {
-        font-size: 30px !important; /* Large team names */
-        color: #FFD700;
-    }
+
+    .team-name { font-size: 35px; font-weight: bold; color: #FFD700; margin-bottom: 10px; }
+    .team-score { font-size: 65px; font-weight: 900; color: #ffffff; }
+    .team-rank { font-size: 25px; color: #00FFCC; font-style: italic; }
+
+    /* Custom Table for TV */
+    .stTable { background: rgba(0,0,0,0.4); border-radius: 20px; font-size: 24px; }
     
-    .stMetric {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border: 2px solid rgba(255, 255, 255, 0.2) !important;
-        backdrop-filter: blur(10px);
-        padding: 30px !important;
-        border-radius: 25px !important;
-    }
-
-    /* Hide Streamlit elements for clean TV look */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
+    /* Remove default Streamlit clutter */
+    header, footer, #MainMenu { visibility: hidden; }
     </style>
     """, unsafe_allow_html=True)
 
-st.markdown('<p class="main-title">AYATHI AVRUDU UDANAYA 2026</p>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-title">AYATHI AVRUDU UDANAYA 2026</h1>', unsafe_allow_html=True)
 
-# Google Sheet Data Load
+# Google Sheet URL
 SHEET_ID = "1W7emxpy74FY1sCFqmuOt5zQP1bVrIJtekMqSYiFOEMQ"
 MARKS_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid=0"
 
+@st.cache_data(ttl=5)
 def load_data():
     try:
-        df = pd.read_csv(MARKS_URL)
-        return df
+        return pd.read_csv(MARKS_URL)
     except:
         return None
 
-marks_df = load_data()
+df = load_data()
 
-if marks_df is not None:
-    # Live Summary
-    summary_df = marks_df.groupby('Team ').agg({'Points Added': 'sum'}).reset_index()
-    summary_df.columns = ['Team Name', 'Total Score']
-    summary_df = summary_df.sort_values(by='Total Score', ascending=False)
+if df is not None:
+    # 1. Real-time Summary
+    summary = df.groupby('Team ').agg({'Points Added': 'sum'}).reset_index()
+    summary.columns = ['Team Name', 'Total Score']
+    summary = summary.sort_values(by='Total Score', ascending=False)
+    summary['Rank'] = range(1, len(summary) + 1)
+
+    # 2. Leaderboard Grid (Mulu dashboard ekama wenas kara)
+    st.markdown("### 🥇 LEADERBOARD")
+    cols = st.columns(len(summary))
     
-    # --- LEADERBOARD (FULL WIDTH CARDS) ---
-    st.write("### 🏆 LEADERBOARD")
-    cols = st.columns(len(summary_df))
-    for i, (idx, row) in enumerate(summary_df.iterrows()):
+    for i, (idx, row) in enumerate(summary.iterrows()):
         with cols[i]:
-            st.metric(label=row['Team Name'], value=int(row['Total Score']))
+            st.markdown(f"""
+                <div class="leaderboard-card">
+                    <div class="team-rank"># {row['Rank']}</div>
+                    <div class="team-name">{row['Team Name']}</div>
+                    <div class="team-score">{int(row['Total Score'])}</div>
+                    <div style="color: gray;">POINTS</div>
+                </div>
+            """, unsafe_allow_html=True)
 
     st.markdown("<br><br>", unsafe_allow_html=True)
 
-    # --- CHARTS SECTION ---
-    col_chart, col_feed = st.columns([2, 1])
+    # 3. Chart & Feed Section
+    col_chart, col_feed = st.columns([1.8, 1.2])
 
     with col_chart:
+        st.write("### 📈 SCORE PROGRESSION")
+        # Horizontal Chart for better TV fit
         fig = px.bar(
-            summary_df, x='Team Name', y='Total Score', 
+            summary, y='Team Name', x='Total Score', 
+            orientation='h',
             color='Team Name', text='Total Score',
-            color_discrete_map={
-                'Red': '#FF0000', 'Blue': '#0000FF', 
-                'Green': '#008000', 'Yellow': '#FFFF00'
-            }
+            color_discrete_map={'Red': '#FF3131', 'Blue': '#007FFF', 'Green': '#39FF14', 'Yellow': '#FFFF33'}
         )
-        fig.update_traces(textfont_size=25, textposition='outside')
+        fig.update_traces(textfont_size=30, textposition='inside')
         fig.update_layout(
-            height=600,
-            plot_bgcolor='rgba(0,0,0,0)', 
+            height=500,
+            showlegend=False,
+            plot_bgcolor='rgba(0,0,0,0)',
             paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(size=20, color="white"),
-            xaxis={'categoryorder':'total descending'}
+            font=dict(size=22, color="white"),
+            xaxis=dict(showgrid=False, title=""),
+            yaxis=dict(showgrid=False, title="", tickfont=dict(size=25))
         )
         st.plotly_chart(fig, use_container_width=True)
 
     with col_feed:
-        st.write("### 🔔 LATEST SCORES")
-        recent = marks_df.tail(6).iloc[::-1]
-        # Custom Table Styling for TV
-        st.table(recent[['Team ', 'Points Added']])
+        st.write("### 🔔 LIVE UPDATES")
+        recent = df.tail(8).iloc[::-1]
+        # Professional dark dataframe
+        st.dataframe(
+            recent[['Team ', 'Game Name', 'Points Added']], 
+            use_container_width=True, 
+            hide_index=True
+        )
+
+    st.markdown(f"<p style='text-align: right; color: #444;'>Refresh Cycle: 5s | {time.strftime('%H:%M:%S')}</p>", unsafe_allow_html=True)
 
 else:
-    st.error("Data load kireeme doshayaki!")
+    st.error("Sheet eka connect kireeme doshayaki. Permissions check karanna.")
 
-# Auto Refresh for Live TV Feel (Every 10 seconds)
-time.sleep(10)
+# Auto Refresh (Fast 5 seconds for TV)
+time.sleep(5)
 st.rerun()
