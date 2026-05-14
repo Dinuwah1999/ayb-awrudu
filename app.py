@@ -12,7 +12,7 @@ SHEET_ID = "1W7emxpy74FY1sCFqmuOt5zQP1bVrIJtekMqSYiFOEMQ"
 MARKS_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid=0"
 BG_URL = f"https://lh3.googleusercontent.com/u/0/d/{IMAGE_FILE_ID}"
 
-# 2. Advanced CSS for Table Visibility & Highlighting
+# 2. Optimized CSS for Vertical TV List View
 st.markdown(f"""
     <style>
     .stApp {{
@@ -23,7 +23,8 @@ st.markdown(f"""
         background-attachment: fixed;
     }}
     
-    .block-container {{ padding-top: 1rem !important; }}
+    /* Remove default padding */
+    .block-container {{ padding-top: 1rem !important; padding-bottom: 0rem !important; }}
 
     .main-title {{
         font-size: 3.5vw !important;
@@ -31,29 +32,38 @@ st.markdown(f"""
         text-align: center;
         color: #FFD700;
         text-shadow: 3px 3px 15px rgba(0,0,0,1);
-        margin-top: -30px;
+        margin-top: -40px;
+        margin-bottom: 10px;
         text-transform: uppercase;
     }}
 
-    /* Highlights the Latest Update Row */
-    .stTable tr:first-child {{
-        background-color: rgba(255, 215, 0, 0.3) !important;
-        font-weight: bold !important;
-        color: #FFD700 !important;
-        border: 2px solid #FFD700 !important;
-    }}
-
+    /* Compact Team Cards */
     .team-card {{
-        padding: 1.2vw;
+        padding: 10px;
         border-radius: 20px;
         text-align: center;
         border: 3px solid;
-        backdrop-filter: blur(10px);
+        backdrop-filter: blur(8px);
     }}
     .red-card {{ background: rgba(255, 0, 0, 0.25); border-color: #FF0000; }}
     .blue-card {{ background: rgba(30, 144, 255, 0.25); border-color: #1E90FF; }}
     .green-card {{ background: rgba(50, 205, 50, 0.25); border-color: #32CD32; }}
     .yellow-card {{ background: rgba(255, 215, 0, 0.25); border-color: #FFD700; }}
+
+    /* Highlight Latest Update Section */
+    .highlight-box {{
+        background: rgba(255, 215, 0, 0.15);
+        border: 2px solid #FFD700;
+        border-radius: 15px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }}
+    
+    /* Table Styling for TV */
+    .stTable {{
+        font-size: 1.5vw !important;
+        background: rgba(0,0,0,0.5) !important;
+    }}
 
     #MainMenu, footer, header {{visibility: hidden;}}
     </style>
@@ -81,41 +91,39 @@ if df is not None:
     colors_map = {'Red': '#FF0000', 'Blue': '#1E90FF', 'Green': '#32CD32', 'Yellow': '#FFD700'}
     class_map = {'Red': 'red-card', 'Blue': 'blue-card', 'Green': 'green-card', 'Yellow': 'yellow-card'}
 
-    # --- TOP: STANDINGS ---
+    # --- 1. TOP: STANDINGS CARDS ---
     cols = st.columns(len(summary))
     for i, (idx, row) in enumerate(summary.iterrows()):
         t_name = row['Team']
         t_points = int(row['Points Added'])
         with cols[i]:
             st.markdown(f"""<div class="team-card {class_map.get(t_name, '')}">
-                <p style='font-size: 1.5vw; font-weight: bold; margin: 0; color: {colors_map.get(t_name, '#FFF')};'>{t_name}</p>
-                <p style='font-size: 4vw; font-weight: 800; margin: 0; color: white;'>{t_points}</p>
+                <p style='font-size: 1.4vw; font-weight: bold; margin: 0; color: {colors_map.get(t_name, '#FFF')};'>{t_name}</p>
+                <p style='font-size: 3.5vw; font-weight: 800; margin: 0; color: white;'>{t_points}</p>
             </div>""", unsafe_allow_html=True)
 
-    # --- MAIN CONTENT: LATEST UPDATES (NOW ON TOP OF CHART) ---
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # We split into two columns so the table is clearly visible
-    col_table, col_chart = st.columns([1, 1.2])
+    st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
 
-    with col_table:
-        st.markdown("<p style='color: #FFD700; font-size: 1.8vw; font-weight: bold;'>🔔 LATEST SCORE UPDATES</p>", unsafe_allow_html=True)
-        recent_activity = df.tail(5).iloc[::-1] # Show last 5 updates
-        st.table(recent_activity[['Team', 'Game Name', 'Points Added']])
+    # --- 2. MIDDLE: LATEST UPDATES (List Format) ---
+    st.markdown('<div class="highlight-box">', unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #FFD700; font-size: 1.8vw; font-weight: bold; margin: 0;'>🔔 LATEST SCORE UPDATES</p>", unsafe_allow_html=True)
+    recent_activity = df.tail(3).iloc[::-1] # Anthima 3 witharai ida ithiri karanna
+    st.table(recent_activity[['Team', 'Game Name', 'Points Added']])
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    with col_chart:
-        st.markdown("<p style='color: white; font-size: 1.8vw; font-weight: bold;'>📊 POINTS PROGRESS</p>", unsafe_allow_html=True)
-        fig = px.bar(summary, y='Team', x='Points Added', color='Team', 
-                     text='Points Added', orientation='h', color_discrete_map=colors_map)
-        fig.update_layout(height=300, margin=dict(l=10, r=40, t=10, b=10),
-                          plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', 
-                          font=dict(size=14, color="white"), showlegend=False,
-                          xaxis=dict(visible=False), yaxis=dict(title="", tickfont=dict(size=20, color="white")))
-        fig.update_traces(textfont_size=25, textposition='outside', cliponaxis=False)
-        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+    # --- 3. BOTTOM: POINTS PROGRESS CHART ---
+    st.markdown("<p style='text-align: center; color: white; font-size: 1.5vw; font-weight: bold; margin: 0;'>📊 POINTS PROGRESS</p>", unsafe_allow_html=True)
+    fig = px.bar(summary, y='Team', x='Points Added', color='Team', 
+                 text='Points Added', orientation='h', color_discrete_map=colors_map)
+    fig.update_layout(height=240, margin=dict(l=10, r=40, t=5, b=5),
+                      plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', 
+                      font=dict(size=12, color="white"), showlegend=False,
+                      xaxis=dict(visible=False), yaxis=dict(title="", tickfont=dict(size=18, color="white")))
+    fig.update_traces(textfont_size=22, textposition='outside', cliponaxis=False)
+    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
 else:
-    st.error("Sheet ekata connect wenna ba!")
+    st.error("🔄 Sheet connect wenne na macho...")
 
 time.sleep(10)
 st.rerun()
