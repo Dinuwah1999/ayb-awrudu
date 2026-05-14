@@ -8,7 +8,7 @@ st.set_page_config(page_title="Ayathi Avurudu Udanaya 2026 - Live", layout="wide
 
 # --- SETTINGS ---
 # Background image eka oyaage GitHub eke thiyena widiyata local file ekak gannawa
-BG_IMAGE = "background.jpg" 
+BG_IMAGE = "2.jpg" 
 SHEET_ID = "1W7emxpy74FY1sCFqmuOt5zQP1bVrIJtekMqSYiFOEMQ"
 MARKS_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid=0"
 
