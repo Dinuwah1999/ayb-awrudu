@@ -3,24 +3,21 @@ import pandas as pd
 import plotly.express as px
 import time
 
-# 1. Page Configuration (Full Width for TV)
-st.set_page_config(page_title="Ayathi Avurudu Udanaya Dashboard", layout="wide")
+# 1. Page Configuration
+st.set_page_config(page_title="Ayathi Avurudu Udanaya 2026 - TV", layout="wide")
 
 # --- SETTINGS ---
-# Aluth Google Drive Image ID eka
+# Oya dapu aluth Google Drive Image ID eka
 IMAGE_FILE_ID = "1fDnUlHbPnaRcJHsg_OvnVjEdkpCM2WCa"
-# Google Sheet URL
 SHEET_ID = "1W7emxpy74FY1sCFqmuOt5zQP1bVrIJtekMqSYiFOEMQ"
 MARKS_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid=0"
-
-# Direct Image Link for Background
 BG_URL = f"https://lh3.googleusercontent.com/u/0/d/{IMAGE_FILE_ID}"
 
-# 2. TV-Optimized Styling (BIG FONTS & GLASS UI)
+# 2. TV-Optimized Styling (BIG FONTS & TEAM COLORS)
 st.markdown(f"""
     <style>
     .stApp {{
-        background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), 
+        background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
                     url("{BG_URL}");
         background-size: cover;
         background-position: center;
@@ -28,57 +25,47 @@ st.markdown(f"""
     }}
     
     .main-title {{
-        font-size: 85px !important;
+        font-size: 80px !important;
         font-weight: 900;
         text-align: center;
         color: #FFD700;
-        text-shadow: 6px 6px 25px rgba(0,0,0,1);
-        padding-top: 10px;
-        margin-bottom: 30px;
+        text-shadow: 5px 5px 25px rgba(0,0,0,1);
+        margin-bottom: 20px;
         text-transform: uppercase;
-        letter-spacing: 4px;
+        letter-spacing: 5px;
     }}
 
-    /* Score Cards */
-    [data-testid="stMetricValue"] {{
-        font-size: 110px !important;
-        font-weight: 800;
-        color: #ffffff !important;
-        text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
-    }}
-    
-    [data-testid="stMetricLabel"] {{
-        font-size: 45px !important;
-        font-weight: 700;
-        color: #FFD700 !important;
-    }}
+    /* Team Specific Metric Colors */
+    [data-testid="stMetricValue"] {{ font-size: 100px !important; font-weight: 800; color: white !important; }}
+    [data-testid="stMetricLabel"] {{ font-size: 45px !important; font-weight: 700; }}
 
+    /* Custom Metric Card Glass Effect */
     .stMetric {{
         background: rgba(255, 255, 255, 0.1) !important;
         border: 2px solid rgba(255, 255, 255, 0.2) !important;
-        backdrop-filter: blur(20px);
-        border-radius: 40px !important;
-        padding: 40px !important;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+        backdrop-filter: blur(15px);
+        border-radius: 35px !important;
+        padding: 30px !important;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.7);
     }}
 
-    /* Table styling */
-    .stTable {{ 
-        font-size: 28px !important; 
-        background-color: rgba(0,0,0,0.6) !important;
-        color: white !important;
-        border-radius: 20px;
+    /* Latest Update Section at Bottom */
+    .footer-table {{
+        background: rgba(0, 0, 0, 0.6);
+        padding: 20px;
+        border-radius: 25px;
+        border: 1px solid rgba(255,255,255,0.1);
     }}
     
-    /* Hide Default UI */
+    .stTable {{ font-size: 28px !important; color: white !important; }}
+    
     #MainMenu, footer, header {{visibility: hidden;}}
     </style>
     """, unsafe_allow_html=True)
 
-# Main Title
 st.markdown('<p class="main-title">AYATHI AVRUDU UDANAYA 2026</p>', unsafe_allow_html=True)
 
-# 3. Data Loading Logic
+# 3. Data Loading
 @st.cache_data(ttl=5)
 def get_live_data():
     try:
@@ -89,62 +76,59 @@ def get_live_data():
 df = get_live_data()
 
 if df is not None:
-    # Calculating Team-wise Total Scores
+    # Calculating Team Scores
     summary = df.groupby('Team ').agg({'Points Added': 'sum'}).reset_index()
     summary = summary.sort_values(by='Points Added', ascending=False)
-
-    # --- LEADERBOARD ---
-    st.write("### 🥇 LIVE STANDINGS")
-    cols = st.columns(len(summary))
-    for i, (idx, row) in enumerate(summary.iterrows()):
-        with cols[i]:
-            st.metric(label=row['Team '], value=int(row['Points Added']))
-
-    st.markdown("<br><br>", unsafe_allow_html=True)
-
-    # --- ADVANCED CHART & RECENT UPDATES ---
-    c1, c2 = st.columns([2, 1])
     
-    with c1:
-        st.write("### 📊 POINTS PROGRESS")
-        # Vertical Bar chart with customized UI
-        fig = px.bar(
-            summary, 
-            x='Team ', 
-            y='Points Added', 
-            color='Team ', 
-            text='Points Added',
-            color_discrete_map={
-                'Red': '#FF0000', 'Blue': '#1E90FF', 
-                'Green': '#32CD32', 'Yellow': '#FFD700'
-            }
-        )
-        
-        fig.update_layout(
-            height=550,
-            plot_bgcolor='rgba(0,0,0,0)', 
-            paper_bgcolor='rgba(0,0,0,0)', 
-            font=dict(size=25, color="white"),
-            showlegend=False,
-            xaxis=dict(title="", showgrid=False),
-            yaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.1)', title="Total Points")
-        )
-        fig.update_traces(
-            textfont_size=45, 
-            textposition='outside',
-            marker_line_color='white',
-            marker_line_width=2
-        )
-        st.plotly_chart(fig, use_container_width=True)
+    # --- TOP: LIVE STANDINGS (Cards with colors) ---
+    st.markdown("<h2 style='text-align: center; color: white; font-size: 40px;'>🥇 LIVE LEADERBOARD</h2>", unsafe_allow_html=True)
+    cols = st.columns(len(summary))
+    
+    # Team colors map
+    colors_map = {'Red': '#FF0000', 'Blue': '#1E90FF', 'Green': '#32CD32', 'Yellow': '#FFD700'}
 
-    with c2:
-        st.write("### 📢 LATEST UPDATES")
-        recent = df.tail(6).iloc[::-1]
-        st.table(recent[['Team ', 'Points Added']])
+    for i, (idx, row) in enumerate(summary.iterrows()):
+        team_name = row['Team ']
+        team_color = colors_map.get(team_name.strip(), "#FFFFFF")
+        with cols[i]:
+            # Injecting team specific color to label
+            st.markdown(f"<p style='color:{team_color}; font-size:35px; font-weight:bold; text-align:center; margin-bottom:-50px;'>{team_name}</p>", unsafe_allow_html=True)
+            st.metric(label="", value=int(row['Points Added']))
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # --- MIDDLE: POINTS PROGRESS (Vertical Chart - Highlighted) ---
+    st.markdown("<h2 style='text-align: center; color: white; font-size: 40px;'>📊 POINTS PROGRESS</h2>", unsafe_allow_html=True)
+    fig = px.bar(
+        summary, x='Team ', y='Points Added', color='Team ', 
+        text='Points Added',
+        color_discrete_map=colors_map
+    )
+    fig.update_layout(
+        height=500,
+        plot_bgcolor='rgba(0,0,0,0)', 
+        paper_bgcolor='rgba(0,0,0,0)', 
+        font=dict(size=25, color="white"),
+        showlegend=False,
+        xaxis=dict(title="", showgrid=False),
+        yaxis=dict(showgrid=True, gridcolor='rgba(255,255,255,0.1)', visible=False)
+    )
+    fig.update_traces(
+        textfont_size=50, textposition='outside',
+        marker_line_color='white', marker_line_width=3
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+    # --- BOTTOM: LATEST UPDATES (Table Section) ---
+    st.markdown("<hr style='border: 1px solid rgba(255,255,255,0.2)'>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; color: #FFD700;'>🔔 LATEST SCORE UPDATES</h3>", unsafe_allow_html=True)
+    
+    recent_activity = df.tail(5).iloc[::-1]
+    st.table(recent_activity[['Time', 'Team ', 'Game Name', 'Points Added']])
 
 else:
-    st.error("Data load karanna baha. Google Sheet Link eka check karanna!")
+    st.error("Sheet data load karanna baha!")
 
-# 4. Auto-Refresh (10 Seconds)
+# Auto-Refresh
 time.sleep(10)
 st.rerun()
