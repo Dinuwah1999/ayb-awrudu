@@ -48,6 +48,15 @@ st.markdown(f"""
         margin-bottom: 1vh;
     }}
 
+    /* Progress Chart eka pahalata ganna aluth style eka */
+    .chart-heading {{
+        font-size: 3vh !important;
+        color: white;
+        text-align: center;
+        margin-top: 10vh !important; /* Meken thama chart eka pahalata thallu karanne */
+        margin-bottom: 1vh;
+    }}
+
     .team-card {{
         padding: 2vh;
         border-radius: 2.5vh;
@@ -103,13 +112,14 @@ if df is not None:
                 """, unsafe_allow_html=True)
 
     # --- 📊 PROGRESS CHART ---
-    st.markdown('<p class="section-head">📊 POINTS PROGRESS</p>', unsafe_allow_html=True)
+    # Aluth style eka methana apply kara
+    st.markdown('<p class="chart-heading">📊 POINTS PROGRESS</p>', unsafe_allow_html=True)
     
     fig = px.bar(summary, y='Team', x='Points Added', color='Team', 
                  text='Points Added', orientation='h', color_discrete_map=colors_map)
     
     fig.update_layout(
-        height=400, 
+        height=350, # Pahalata thallu karapu nisa height eka poddak balance kala
         margin=dict(l=20, r=60, t=10, b=10),
         plot_bgcolor='rgba(0,0,0,0)', 
         paper_bgcolor='rgba(0,0,0,0)', 
