@@ -12,17 +12,16 @@ SHEET_ID = "1W7emxpy74FY1sCFqmuOt5zQP1bVrIJtekMqSYiFOEMQ"
 MARKS_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid=0"
 BG_URL = f"https://lh3.googleusercontent.com/u/0/d/{IMAGE_FILE_ID}"
 
-# 2. Dynamic TV Scaling CSS (The Secret Sauce)
+# 2. Dynamic TV Scaling CSS
 st.markdown(f"""
     <style>
-    /* Full Screen Fix */
     .stApp {{
         background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
                     url("{BG_URL}");
         background-size: cover;
         background-position: center;
         height: 100vh;
-        overflow: hidden; /* Scrollbar ain kala */
+        overflow: hidden;
     }}
     
     .block-container {{
@@ -31,7 +30,6 @@ st.markdown(f"""
         max-width: 95% !important;
     }}
 
-    /* Text scaling based on Screen Width (vw) and Height (vh) */
     .main-title {{
         font-size: 6vh !important; 
         font-weight: 900;
@@ -50,7 +48,6 @@ st.markdown(f"""
         margin-bottom: 1vh;
     }}
 
-    /* Card Scaling */
     .team-card {{
         padding: 2vh;
         border-radius: 2.5vh;
@@ -58,10 +55,10 @@ st.markdown(f"""
         border: 0.4vh solid;
         backdrop-filter: blur(10px);
     }}
-    .red-card {{ background: rgba(255, 0, 0, 0.2); border-color: #FF0000; }}
-    .blue-card {{ background: rgba(30, 144, 255, 0.2); border-color: #1E90FF; }}
-    .green-card {{ background: rgba(50, 205, 50, 0.2); border-color: #32CD32; }}
-    .yellow-card {{ background: rgba(255, 215, 0, 0.2); border-color: #FFD700; }}
+    .red-card {{ background: rgba(255, 0, 0, 0.25); border-color: #FF0000; }}
+    .blue-card {{ background: rgba(30, 144, 255, 0.25); border-color: #1E90FF; }}
+    .green-card {{ background: rgba(50, 205, 50, 0.25); border-color: #32CD32; }}
+    .yellow-card {{ background: rgba(255, 215, 0, 0.25); border-color: #FFD700; }}
 
     .card-label {{ font-size: 2.5vh !important; font-weight: bold; margin: 0; }}
     .card-points {{ font-size: 8vh !important; font-weight: 800; margin: 0; line-height: 1; }}
@@ -76,7 +73,9 @@ st.markdown('<p class="main-title">AYATHI AVRUDU UDANAYA 2026</p>', unsafe_allow
 @st.cache_data(ttl=5)
 def get_live_data():
     try:
-        return pd.read_csv(MARKS_URL)
+        data = pd.read_csv(MARKS_URL)
+        data.columns = data.columns.str.strip()
+        return data
     except:
         return None
 
@@ -106,12 +105,11 @@ if df is not None:
     # --- 📊 PROGRESS CHART ---
     st.markdown('<p class="section-head">📊 POINTS PROGRESS</p>', unsafe_allow_html=True)
     
-    # Screen height eka anuwa chart eka scale wenna (vh use karala)
     fig = px.bar(summary, y='Team', x='Points Added', color='Team', 
                  text='Points Added', orientation='h', color_discrete_map=colors_map)
     
     fig.update_layout(
-        height=380, # Meka 1080p TV ekakata fit wenna damma
+        height=400, 
         margin=dict(l=20, r=60, t=10, b=10),
         plot_bgcolor='rgba(0,0,0,0)', 
         paper_bgcolor='rgba(0,0,0,0)', 
@@ -123,6 +121,9 @@ if df is not None:
     fig.update_traces(textfont_size=30, textposition='outside', cliponaxis=False)
     
     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
+
+else:
+    st.error("Google Sheet Connect Wenne Na!")
 
 # Refresh
 time.sleep(10)
