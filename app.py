@@ -76,7 +76,7 @@ st.markdown(f"""
     </style>
     """, unsafe_allow_html=True)
 
-st.markdown('<p class="main-title">AYATHI AVRUDU UDANAYA 2026</p>', unsafe_allow_html=True)
+st.markdown('<p class="main-title">MAS AYATHI AVURUDU UDANAYA 2026</p>', unsafe_allow_html=True)
 
 # 3. Data Loading
 @st.cache_data(ttl=5)
