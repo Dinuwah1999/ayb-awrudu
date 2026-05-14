@@ -12,7 +12,7 @@ SHEET_ID = "1W7emxpy74FY1sCFqmuOt5zQP1bVrIJtekMqSYiFOEMQ"
 MARKS_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid=0"
 BG_URL = f"https://lh3.googleusercontent.com/u/0/d/{IMAGE_FILE_ID}"
 
-# 2. Optimized CSS for TV (No Scrolling)
+# 2. TV-Optimized Layout Fix
 st.markdown(f"""
     <style>
     .stApp {{
@@ -23,25 +23,25 @@ st.markdown(f"""
         background-attachment: fixed;
     }}
     
-    /* Header Scaling */
+    /* Header Fixed - Screen ekata fit wenna */
     .main-title {{
-        font-size: 4vw !important; /* Screen width ekata scale wenna */
+        font-size: 3.5vw !important;
         font-weight: 900;
         text-align: center;
         color: #FFD700;
-        text-shadow: 3px 3px 12px rgba(0,0,0,1);
-        margin-top: -60px;
+        text-shadow: 3px 3px 10px rgba(0,0,0,1);
+        margin-top: -80px; /* Aligned for TV top */
+        padding-bottom: 10px;
         text-transform: uppercase;
     }}
 
     /* Team Cards */
     .team-card {{
-        padding: 1.5vw;
-        border-radius: 25px;
+        padding: 1vw;
+        border-radius: 20px;
         text-align: center;
-        border: 4px solid;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        border: 3px solid;
+        backdrop-filter: blur(8px);
     }}
     .red-card {{ background: rgba(255, 0, 0, 0.2); border-color: #FF0000; }}
     .blue-card {{ background: rgba(30, 144, 255, 0.2); border-color: #1E90FF; }}
@@ -49,25 +49,25 @@ st.markdown(f"""
     .yellow-card {{ background: rgba(255, 215, 0, 0.2); border-color: #FFD700; }}
 
     /* Table Compact Styling */
-    .stTable {{ 
-        font-size: 20px !important; 
-        color: white !important;
-        background: rgba(0,0,0,0.3) !important;
+    div[data-testid="stTable"] {{
+        background: rgba(0,0,0,0.4);
         border-radius: 15px;
+        font-size: 1.5vw !important;
     }}
     
-    /* Hide Default UI */
     #MainMenu, footer, header {{visibility: hidden;}}
     </style>
     """, unsafe_allow_html=True)
 
+# Title Highlight
 st.markdown('<p class="main-title">AYATHI AVRUDU UDANAYA 2026</p>', unsafe_allow_html=True)
 
 # 3. Data Loading
-@st.cache_data(ttl=3) # 3 seconds refresh check
+@st.cache_data(ttl=3)
 def get_live_data():
     try:
-        return pd.read_csv(MARKS_URL)
+        data = pd.read_csv(MARKS_URL)
+        return data
     except:
         return None
 
@@ -82,7 +82,6 @@ if df is not None:
     class_map = {'Red': 'red-card', 'Blue': 'blue-card', 'Green': 'green-card', 'Yellow': 'yellow-card'}
 
     # --- TOP: COLOR CODED CARDS ---
-    st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
     cols = st.columns(len(summary))
     for i, (idx, row) in enumerate(summary.iterrows()):
         t_name = row['Team '].strip()
@@ -93,44 +92,40 @@ if df is not None:
         with cols[i]:
             st.markdown(f"""
                 <div class="team-card {t_class}">
-                    <p style='font-size: 2vw; font-weight: bold; margin: 0; color: {t_color};'>{t_name}</p>
-                    <p style='font-size: 5vw; font-weight: 800; margin: 0; color: white;'>{t_points}</p>
+                    <p style='font-size: 1.8vw; font-weight: bold; margin: 0; color: {t_color};'>{t_name}</p>
+                    <p style='font-size: 4vw; font-weight: 800; margin: 0; color: white;'>{t_points}</p>
                 </div>
                 """, unsafe_allow_html=True)
 
-    # --- MIDDLE: PROGRESS CHART (Responsive Height) ---
+    # --- MIDDLE: PROGRESS CHART (Dynamic Height) ---
     fig = px.bar(
         summary, y='Team ', x='Points Added', color='Team ', 
         text='Points Added', orientation='h',
         color_discrete_map=colors_map
     )
     fig.update_layout(
-        height=320, # Poddak adu kala table ekata ida denna
-        margin=dict(l=20, r=40, t=20, b=20),
+        height=300, # Fixed low height for TV fit
+        margin=dict(l=10, r=40, t=10, b=10),
         plot_bgcolor='rgba(0,0,0,0)', 
         paper_bgcolor='rgba(0,0,0,0)', 
         font=dict(size=18, color="white"), 
         showlegend=False,
         xaxis=dict(visible=False), 
-        yaxis=dict(title="", tickfont=dict(size=25, color="white"))
+        yaxis=dict(title="", tickfont=dict(size=22, color="white"))
     )
-    fig.update_traces(
-        textfont_size=30, 
-        textposition='outside', 
-        marker_line_color='white', 
-        marker_line_width=2,
-        cliponaxis=False # Chart eken eliyata numbers yanawa nan fix wenna
-    )
+    fig.update_traces(textfont_size=28, textposition='outside', cliponaxis=False)
     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
-    # --- BOTTOM: COMPACT UPDATES ---
-    st.markdown("<p style='text-align: center; color: #FFD700; font-size: 25px; font-weight: bold; margin: 0;'>🔔 LATEST SCORE UPDATES</p>", unsafe_allow_html=True)
-    recent_activity = df.tail(3).iloc[::-1] # Table eka row 3kata adu kala
+    # --- BOTTOM: LATEST UPDATES (Heading visible) ---
+    st.markdown("<p style='text-align: center; color: #FFD700; font-size: 2.2vw; font-weight: bold; margin-top: -10px;'>🔔 LATEST SCORE UPDATES</p>", unsafe_allow_html=True)
+    
+    # Table eke rows 3kata fix kara TV eke yata penna ona nisa
+    recent_activity = df.tail(3).iloc[::-1]
     st.table(recent_activity[['Team ', 'Game Name', 'Points Added']])
 
 else:
-    st.error("Data check karanna mchn, Sheet ekata connect wenna ba!")
+    st.warning("🔄 Connecting to Google Sheets...")
 
-# Auto-Refresh logic
+# Refresh
 time.sleep(10)
 st.rerun()
